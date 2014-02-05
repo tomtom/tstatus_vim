@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    154
+" @Revision:    155
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -32,7 +32,7 @@ endif
 if !exists('g:tstatus_names')
     " A string or list of names that can be defined at startup for use 
     " with |:TStatusregister|.
-    let g:tstatus_names = 'ai bin cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+    let g:tstatus_names = 'ai bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
 endif
 
 
