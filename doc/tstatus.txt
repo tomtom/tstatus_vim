@@ -1,0 +1,109 @@
+*tstatus.txt*   An extensible statusline to monitor options & variables
+                Author: Thomas Link, micathom AT gmail com?subject=vim
+
+This plugin provides a still rather simple statusline manager to monitor 
+options and variables. If an option's or variable's value changes, it is 
+displayed in the statusline.
+
+In order to monitor options/variables, either set |g:tstatus_names| in 
+|vimrc| or call |:TStatusregister|.
+
+Call |:TStatus| to set or reset the status line or the ruler.
+
+
+-----------------------------------------------------------------------
+Install~
+
+Edit the vba file and type: >
+
+    :so %
+
+See :help vimball for details. If you have difficulties or use vim 7.0, 
+please make sure, you have the current version of vimball (vimscript 
+#1502) installed or update your runtime.
+
+
+========================================================================
+Contents~
+
+        g:tstatus_timefmt ........ |g:tstatus_timefmt|
+        g:tstatus_exprs .......... |g:tstatus_exprs|
+        g:tstatus_names .......... |g:tstatus_names|
+        g:tstatus_colorscheme .... |g:tstatus_colorscheme|
+        g:tstatus_rulerformat0 ... |g:tstatus_rulerformat0|
+        g:tstatus_rulerformat1 ... |g:tstatus_rulerformat1|
+        g:tstatus_statusline0 .... |g:tstatus_statusline0|
+        g:tstatus_statusline1 .... |g:tstatus_statusline1|
+        :TStatus ................. |:TStatus|
+        :TStatusregister ......... |:TStatusregister|
+        :TStatusreset ............ |:TStatusreset|
+
+
+========================================================================
+plugin/tstatus.vim~
+
+                                                    *g:tstatus_timefmt*
+g:tstatus_timefmt              (default: '')
+    A string for |strftime()|. If empty, don't display a time stamp in 
+    the status line. Example for |vimrc|: >
+
+      let g:tstatus_timefmt = '%d-%b-%Y %H:%M'
+<
+
+                                                    *g:tstatus_exprs*
+g:tstatus_exprs                (default: [])
+    A list of |eval()| expressions. E.g. >
+
+      call add(g:tstatus_exprs, 'mode()')
+<
+
+                                                    *g:tstatus_names*
+g:tstatus_names                (default: 'ai bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc')
+    A string or list of names that can be defined at startup for use 
+    with |:TStatusregister|.
+
+                                                    *g:tstatus_colorscheme*
+g:tstatus_colorscheme          (default: 'tstatus')
+    If empty, don't set the statusline color.
+    If a punctuation character, set the statusline color but assume 
+    the user has created the appropriate highlight definitions for the 
+    following highlight groups:
+
+      StatusLineNormal
+      StatusLineInsert
+      StatusLineVisual
+
+                                                    *g:tstatus_rulerformat0*
+g:tstatus_rulerformat0         (default: &rulerformat)
+
+                                                    *g:tstatus_rulerformat1*
+g:tstatus_rulerformat1         (default: '%-010.25(%lx%c%V %P%R%M%W%)')
+
+                                                    *g:tstatus_statusline0*
+g:tstatus_statusline0          (default: &statusline)
+
+                                                    *g:tstatus_statusline1*
+g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%k%) %=%{TStatusSummary()} %3*<%l,%c%V,%p%%>%*')
+
+                                                    *:TStatus*
+:TStatus
+    Set or unset (with bang) 'statusline' and 'rulerformat'.
+
+                                                    *:TStatusregister*
+:TStatusregister OPT1 OPT2 ...
+    Register a set of vim |options| or variables that should be watched. 
+    Changes will be displayed in the statusline.
+
+    This also saves the option's value at the time you call this command 
+    for use with |:TStatusreset|.
+
+    See also |g:tstatus_names|.
+
+                                                    *:TStatusreset*
+:TStatusreset [OPT1 OPT2 ...]
+    Reset all or some options to the value saved at the time when calling 
+    |:TStatusregister|.
+
+
+
+vim:tw=78:fo=tcq2:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
