@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    155
+" @Revision:    203
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -32,7 +32,17 @@ endif
 if !exists('g:tstatus_names')
     " A string or list of names that can be defined at startup for use 
     " with |:TStatusregister|.
+    "
+    " See also |g:tstatus_events|.
     let g:tstatus_names = 'ai bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+endif
+
+
+if !exists('g:tstatus_events')
+    " |autocmd-events| on which the options in |g:tstatus_names| will be 
+    " compiled.
+    " If "*", update the values on every update of the 'statusline'.
+    let g:tstatus_events = 'BufEnter,CursorHold,CursorHoldI'   "{{{2
 endif
 
 
@@ -70,6 +80,7 @@ endif
 
 
 let s:options = {}
+let s:events = {}
 let s:status_labels = {
             \ 'fdl': 'F%s', 
 			\ 'ai': {'type': 'bool'},
@@ -113,10 +124,27 @@ endf
 
 function! s:Register(options) "{{{3
     " echom "DBG Register" string(a:options)
+    let ev = '*'
     for opt in a:options
         " echom "DBG Register 0" opt
-        if stridx(opt, '=') != -1
+        if opt =~ '^-'
+            let ml = matchlist(opt, '^--\?\([^=]\+\)=\(.*\)$')
+            if empty(ml)
+                throw 'TStatus: Malformed argument: '. opt
+            endif
+            let name = ml[1]
+            let label = ml[2]
+            if name == 'event'
+                let ev = label
+            else
+                throw 'TStatus: Unsupported argument: '. opt
+            endif
+            continue
+        elseif stridx(opt, '=') != -1
             let ml = matchlist(opt, '^\([^=]\+\)=\(.*\)$')
+            if empty(ml)
+                throw 'TStatus: Malformed argument: '. opt
+            endif
             let name = ml[1]
             let label = ml[2]
             " echom "DBG Register 1" name label
@@ -130,6 +158,14 @@ function! s:Register(options) "{{{3
         endif
         " echom "DBG Register 2" name
         if !has_key(s:options, name)
+            let cev = s:CleanEvent(ev)
+            if !has_key(s:events, cev)
+                let s:events[cev] = []
+                if ev != '*'
+                    exec 'autocmd TStatus' ev '* call s:PrepareBufferStatus('. string([ev]) .')'
+                endif
+            endif
+            call add(s:events[cev], name)
             if name == 'cpo' || name == 'cpoptions'
                 let s:options[name] = s:save_cpo
             elseif name =~ '^\l:'
@@ -170,12 +206,61 @@ endf
 " :nodoc:
 function! TStatusSummary(...)
     let opt = []
-
     if !empty(g:tstatus_colorscheme)
         call s:SetHighlight()
     endif
+    for [cev, opts] in items(s:events)
+        if cev == '*'
+            call s:GetStatus(opt, opts)
+        elseif exists('b:tstatus_'. cev)
+            call add(opt, b:tstatus_{cev})
+        endif
+    endfor
+    call s:PrepareExprs(opt, g:tstatus_exprs)
+    if exists('b:tstatus_exprs')
+        call s:PrepareExprs(opt, b:tstatus_exprs)
+    endif
+    call add(opt, '<'. &filetype .'/'. &fileformat .'>')
+    if !empty(g:tstatus_timefmt)
+        call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
+    endif
+    return join(opt)
+endf
 
-    for o in sort(keys(s:options))
+
+function! s:PrepareExprs(opt, exprs) "{{{3
+    for eval in a:exprs
+        let val = eval(eval)
+        if !empty(val)
+            call add(a:opt, val)
+        endif
+    endfor
+endf
+
+
+function! s:PrepareBufferStatus(events) "{{{3
+    for ev in a:events
+        let cev = s:CleanEvent(ev)
+        if has_key(s:events, cev)
+            let opt = []
+            call s:GetStatus(opt, s:events[cev])
+            let b:tstatus_{cev} = join(opt)
+        endif
+    endfor
+endf
+
+
+function! s:CleanEvent(ev) "{{{3
+    if a:ev == '*'
+        return a:ev
+    else
+        return substitute(a:ev, '\W', '_', 'g')
+    endif
+endf
+
+
+function! s:GetStatus(opt, opts) "{{{3
+    for o in a:opts
         if o =~ '^\l:'
             if !exists(o)
                 continue
@@ -203,33 +288,20 @@ function! TStatusSummary(...)
             endif
             if type == 'bool'
                 if empty(lab)
-                    call add(opt, (ov ? '+' : '-') . o)
+                    call add(a:opt, (ov ? '+' : '-') . o)
                 else
-                    call add(opt, lab)
+                    call add(a:opt, lab)
                 endif
+            elseif empty(lab)
+                call add(a:opt, ov)
             elseif stridx(lab, '%s') != -1
-                call add(opt, printf(lab, ov))
+                call add(a:opt, printf(lab, ov))
             else
-                call add(opt, lab .'='. ov)
+                call add(a:opt, lab .'='. ov)
             endif
         endif
         unlet ov
     endfor
-
-    for eval in g:tstatus_exprs
-        let val = eval(eval)
-        if !empty(val)
-            call add(opt, val)
-        endif
-    endfor
-
-    call add(opt, '<'. &filetype .'/'. &fileformat .'>')
-
-    if !empty(g:tstatus_timefmt)
-        call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
-    endif
-
-    return join(opt)
 endf
 
 
@@ -237,14 +309,23 @@ endf
 command! -bang TStatus call s:Set(empty("<bang>"))
 
 
-" :display: :TStatusregister OPT1 OPT2 ...
+" :display: :TStatusregister [OPTIONS] OPT1[=LABEL1] OPT2[=LABEL2] ...
 " Register a set of vim |options| or variables that should be watched. 
 " Changes will be displayed in the statusline.
 "
 " This also saves the option's value at the time you call this command 
 " for use with |:TStatusreset|.
 "
-" See also |g:tstatus_names|.
+" OPT can be any option or variable (with g:, b:, or w: prefix).
+"
+" LABEL can be either empty, a string, or a format string for |printf()|.
+"
+" OPTIONS can be:
+"
+"   --events=AUTOCOMMAND_EVENTS ... Update the following options only on 
+"                                   these |autocommand-events|.
+"
+" See also |g:tstatus_names| and |g:tstatus_exprs|.
 command! -nargs=+ -bar TStatusregister call s:Register([<f-args>])
 
 
@@ -252,13 +333,19 @@ command! -nargs=+ -bar TStatusregister call s:Register([<f-args>])
 " Reset all or some options to the value saved at the time when calling 
 " |:TStatusregister|.
 command! -nargs=* -bar TStatusreset call s:Reset([<f-args>])
+    
+
+augroup TStatus
+    autocmd!
+    autocmd User tstatus call s:PrepareBufferStatus(keys(s:events))
+augroup END
 
 
 if !empty(g:tstatus_names)
     if type(g:tstatus_names) == 1
-        call s:Register(split(g:tstatus_names, '\s\+'))
+        call s:Register(['--event='. g:tstatus_events] + split(g:tstatus_names, '\s\+'))
     elseif type(g:tstatus_names) == 3
-        call s:Register(g:tstatus_names)
+        call s:Register(['--event='. g:tstatus_events] + g:tstatus_names)
     else
         throw "TStatus: g:tstatus_names must be either a string or a list"
     endif
@@ -266,10 +353,7 @@ endif
 
 
 if has('vim_starting')
-    augroup TStatus
-        autocmd!
-        autocmd VimEnter * TStatus
-    augroup END
+    autocmd TStatus VimEnter * TStatus
 else
     TStatus
 endif
