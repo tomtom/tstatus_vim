@@ -1,12 +1,12 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    203
+" @Revision:    204
 
 if &cp || exists("g:loaded_tstatus")
     finish
 endif
-let g:loaded_tstatus = 1
+let g:loaded_tstatus = 2
 
 let s:save_cpo = &cpo
 set cpo&vim
