@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    204
+" @Revision:    206
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -34,7 +34,7 @@ if !exists('g:tstatus_names')
     " with |:TStatusregister|.
     "
     " See also |g:tstatus_events|.
-    let g:tstatus_names = 'ai bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+    let g:tstatus_names = 'ai aw bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
 endif
 
 
