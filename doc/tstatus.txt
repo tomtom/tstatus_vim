@@ -29,6 +29,7 @@ Contents~
         g:tstatus_timefmt ........ |g:tstatus_timefmt|
         g:tstatus_exprs .......... |g:tstatus_exprs|
         g:tstatus_names .......... |g:tstatus_names|
+        g:tstatus_events ......... |g:tstatus_events|
         g:tstatus_colorscheme .... |g:tstatus_colorscheme|
         g:tstatus_rulerformat0 ... |g:tstatus_rulerformat0|
         g:tstatus_rulerformat1 ... |g:tstatus_rulerformat1|
@@ -58,9 +59,17 @@ g:tstatus_exprs                (default: [])
 <
 
                                                     *g:tstatus_names*
-g:tstatus_names                (default: 'ai bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc')
+g:tstatus_names                (default: 'ai aw bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc')
     A string or list of names that can be defined at startup for use 
     with |:TStatusregister|.
+
+    See also |g:tstatus_events|.
+
+                                                    *g:tstatus_events*
+g:tstatus_events               (default: 'BufEnter,CursorHold,CursorHoldI')
+    |autocmd-events| on which the options in |g:tstatus_names| will be 
+    compiled.
+    If "*", update the values on every update of the 'statusline'.
 
                                                     *g:tstatus_colorscheme*
 g:tstatus_colorscheme          (default: 'tstatus')
@@ -90,14 +99,23 @@ g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%
     Set or unset (with bang) 'statusline' and 'rulerformat'.
 
                                                     *:TStatusregister*
-:TStatusregister OPT1 OPT2 ...
+:TStatusregister [OPTIONS] OPT1[=LABEL1] OPT2[=LABEL2] ...
     Register a set of vim |options| or variables that should be watched. 
     Changes will be displayed in the statusline.
 
     This also saves the option's value at the time you call this command 
     for use with |:TStatusreset|.
 
-    See also |g:tstatus_names|.
+    OPT can be any option or variable (with g:, b:, or w: prefix).
+
+    LABEL can be either empty, a string, or a format string for |printf()|.
+
+    OPTIONS can be:
+
+      --event=AUTOCOMMAND_EVENTS ... Update the following options only on 
+                                      these |autocommand-events|.
+
+    See also |g:tstatus_names| and |g:tstatus_exprs|.
 
                                                     *:TStatusreset*
 :TStatusreset [OPT1 OPT2 ...]
