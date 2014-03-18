@@ -122,6 +122,28 @@ fun! s:Reset(options)
 endf
 
 
+function! s:GetOptName(opt) "{{{3
+    let opt = a:opt
+    if stridx(opt, '=') != -1
+        let ml = matchlist(opt, '^\([^=]\{-}\)=\(\w*\)$')
+        if empty(ml)
+            throw 'TStatus: Malformed argument: '. opt
+        endif
+        let name = ml[1]
+        let label = ml[2]
+        " echom "DBG Register 1" name label
+        if label == 'bool'
+            let s:status_labels[name] = {'type': 'bool'}
+        else
+            let s:status_labels[name] = label
+        endif
+    else
+        let name = opt
+    endif
+    return name
+endf
+
+
 function! s:Register(options) "{{{3
     " echom "DBG Register" string(a:options)
     let ev = '*'
@@ -140,21 +162,8 @@ function! s:Register(options) "{{{3
                 throw 'TStatus: Unsupported argument: '. opt
             endif
             continue
-        elseif stridx(opt, '=') != -1
-            let ml = matchlist(opt, '^\([^=]\+\)=\(.*\)$')
-            if empty(ml)
-                throw 'TStatus: Malformed argument: '. opt
-            endif
-            let name = ml[1]
-            let label = ml[2]
-            " echom "DBG Register 1" name label
-            if label == 'bool'
-                let s:status_labels[name] = {'type': 'bool'}
-            else
-                let s:status_labels[name] = label
-            endif
         else
-            let name = opt
+            let name = s:GetOptName(opt)
         endif
         " echom "DBG Register 2" name
         if !has_key(s:options, name)
@@ -322,7 +331,7 @@ command! -bang TStatus call s:Set(empty("<bang>"))
 "
 " OPTIONS can be:
 "
-"   --events=AUTOCOMMAND_EVENTS ... Update the following options only on 
+"   --event=AUTOCOMMAND_EVENTS ... Update the following options only on 
 "                                   these |autocommand-events|.
 "
 " See also |g:tstatus_names| and |g:tstatus_exprs|.
