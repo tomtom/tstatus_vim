@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    208
+" @Revision:    227
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -35,6 +35,12 @@ if !exists('g:tstatus_names')
     "
     " See also |g:tstatus_events|.
     let g:tstatus_names = 'ai aw bin bomb bt cole cpo et fenc fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+endif
+
+
+if !exists('g:tstatus_ignore')
+    " A dictionary of NAME => |REGEXP| FOR IGNORED VALUES.
+    let g:tstatus_ignore = {}   "{{{2
 endif
 
 
@@ -279,7 +285,7 @@ function! s:GetStatus(opt, opts) "{{{3
         else
             exec 'let ov = &'.o
         endif
-        if ov != s:options[o]
+        if ov != s:options[o] && s:NotIgnoredStatus(o, ov)
             let type = ''
             if has_key(s:status_labels, o)
                 let ol = s:status_labels[o]
@@ -314,6 +320,16 @@ function! s:GetStatus(opt, opts) "{{{3
 endf
 
 
+function! s:NotIgnoredStatus(field, value) "{{{3
+    let ignore = get(g:tstatus_ignore, a:field, '')
+    if empty(ignore)
+        return 1
+    else
+        return a:value !~ ignore
+    endif
+endf
+
+
 " Set or unset (with bang) 'statusline' and 'rulerformat'.
 command! -bang TStatus call s:Set(empty("<bang>"))
 
@@ -342,7 +358,7 @@ command! -nargs=+ -bar TStatusregister call s:Register([<f-args>])
 " Reset all or some options to the value saved at the time when calling 
 " |:TStatusregister|.
 command! -nargs=* -bar TStatusreset call s:Reset([<f-args>])
-    
+
 
 augroup TStatus
     autocmd!
