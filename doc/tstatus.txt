@@ -29,6 +29,7 @@ Contents~
         g:tstatus_timefmt ........ |g:tstatus_timefmt|
         g:tstatus_exprs .......... |g:tstatus_exprs|
         g:tstatus_names .......... |g:tstatus_names|
+        g:tstatus_ignore ......... |g:tstatus_ignore|
         g:tstatus_events ......... |g:tstatus_events|
         g:tstatus_colorscheme .... |g:tstatus_colorscheme|
         g:tstatus_rulerformat0 ... |g:tstatus_rulerformat0|
@@ -59,11 +60,15 @@ g:tstatus_exprs                (default: [])
 <
 
                                                     *g:tstatus_names*
-g:tstatus_names                (default: 'ai aw bin bt cole cpo et fdl fo js list paste sol sw ts tw wm enc fenc')
+g:tstatus_names                (default: 'ai aw bin bomb bt cole cpo et fenc fdl fo js list paste sol sw ts tw wm enc fenc')
     A string or list of names that can be defined at startup for use 
     with |:TStatusregister|.
 
     See also |g:tstatus_events|.
+
+                                                    *g:tstatus_ignore*
+g:tstatus_ignore               (default: {})
+    A dictionary of NAME => |REGEXP| FOR IGNORED VALUES.
 
                                                     *g:tstatus_events*
 g:tstatus_events               (default: 'BufEnter,CursorHold,CursorHoldI')
@@ -124,4 +129,4 @@ g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%
 
 
 
-vim:tw=78:fo=tcq2:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
+vim:tw=78:fo=w2croql:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
