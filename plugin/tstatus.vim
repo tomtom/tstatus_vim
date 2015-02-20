@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    227
+" @Revision:    244
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -222,26 +222,29 @@ endf
 
 " :nodoc:
 function! TStatusSummary(...)
-    let opt = []
     if !empty(g:tstatus_colorscheme)
         call s:SetHighlight()
     endif
-    for [cev, opts] in items(s:events)
-        if cev == '*'
-            call s:GetStatus(opt, opts)
-        elseif exists('b:tstatus_'. cev)
-            call add(opt, b:tstatus_{cev})
+    if !exists('b:tstatus')
+        let opt = []
+        for [cev, opts] in items(s:events)
+            if cev == '*'
+                call s:GetStatus(opt, opts)
+            elseif exists('b:tstatus_'. cev) && !empty(b:tstatus_{cev})
+                call add(opt, b:tstatus_{cev})
+            endif
+        endfor
+        call s:PrepareExprs(opt, g:tstatus_exprs)
+        if exists('b:tstatus_exprs')
+            call s:PrepareExprs(opt, b:tstatus_exprs)
         endif
-    endfor
-    call s:PrepareExprs(opt, g:tstatus_exprs)
-    if exists('b:tstatus_exprs')
-        call s:PrepareExprs(opt, b:tstatus_exprs)
+        call add(opt, '<'. &filetype .'/'. &fileformat .'>')
+        if !empty(g:tstatus_timefmt)
+            call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
+        endif
+        let b:tstatus = join(opt)
     endif
-    call add(opt, '<'. &filetype .'/'. &fileformat .'>')
-    if !empty(g:tstatus_timefmt)
-        call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
-    endif
-    return join(opt)
+    return b:tstatus
 endf
 
 
@@ -256,14 +259,20 @@ endf
 
 
 function! s:PrepareBufferStatus(events) "{{{3
-    for ev in a:events
-        let cev = s:CleanEvent(ev)
-        if has_key(s:events, cev)
-            let opt = []
-            call s:GetStatus(opt, s:events[cev])
-            let b:tstatus_{cev} = join(opt)
-        endif
-    endfor
+    if !empty(a:events)
+        for ev in a:events
+            let cev = s:CleanEvent(ev)
+            if has_key(s:events, cev)
+                let opt = []
+                call s:GetStatus(opt, s:events[cev])
+                let st = join(opt)
+                if !exists('b:tstatus_'. cev) || b:tstatus_{cev} != st
+                    let b:tstatus_{cev} = st
+                    unlet! b:tstatus
+                endif
+            endif
+        endfor
+    endif
 endf
 
 
