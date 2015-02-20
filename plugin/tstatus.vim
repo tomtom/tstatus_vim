@@ -173,13 +173,15 @@ function! s:Register(options) "{{{3
         endif
         " echom "DBG Register 2" name
         if !has_key(s:options, name)
-            let cev = s:CleanEvent(ev)
-            if !has_key(s:events, cev)
-                let s:events[cev] = []
-                if ev != '*'
-                    exec 'autocmd TStatus' ev '* call s:PrepareBufferStatus('. string([ev]) .')'
+            for cev0 in split(ev, ',')
+                let cev = s:CleanEvent(cev0)
+                if !has_key(s:events, cev)
+                    let s:events[cev] = []
+                    if cev != '*'
+                        exec 'autocmd TStatus' cev '* call s:PrepareBufferStatus('. string([cev]) .')'
+                    endif
                 endif
-            endif
+            endfor
             call add(s:events[cev], name)
             if name == 'cpo' || name == 'cpoptions'
                 let s:options[name] = s:save_cpo
