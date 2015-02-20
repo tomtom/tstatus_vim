@@ -48,7 +48,7 @@ if !exists('g:tstatus_events')
     " |autocmd-events| on which the options in |g:tstatus_names| will be 
     " compiled.
     " If "*", update the values on every update of the 'statusline'.
-    let g:tstatus_events = 'BufEnter,CursorHold,CursorHoldI'   "{{{2
+    let g:tstatus_events = 'FocusGained,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI'   "{{{2
 endif
 
 
