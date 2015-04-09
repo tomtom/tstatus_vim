@@ -276,6 +276,11 @@ function! s:PrepareBufferStatus(events) "{{{3
 endf
 
 
+function! TStatusForceUpdate() abort "{{{3
+    unlet! b:tstatus
+endf
+
+
 function! s:CleanEvent(ev) "{{{3
     if a:ev == '*'
         return a:ev
