@@ -36,8 +36,10 @@ Contents~
         g:tstatus_rulerformat1 ... |g:tstatus_rulerformat1|
         g:tstatus_statusline0 .... |g:tstatus_statusline0|
         g:tstatus_statusline1 .... |g:tstatus_statusline1|
+        TStatusForceUpdate ....... |TStatusForceUpdate()|
         :TStatus ................. |:TStatus|
         :TStatusregister ......... |:TStatusregister|
+        :TStatusregisterexpr ..... |:TStatusregisterexpr|
         :TStatusreset ............ |:TStatusreset|
 
 
@@ -71,7 +73,7 @@ g:tstatus_ignore               (default: {})
     A dictionary of NAME => |REGEXP| FOR IGNORED VALUES.
 
                                                     *g:tstatus_events*
-g:tstatus_events               (default: 'BufEnter,CursorHold,CursorHoldI')
+g:tstatus_events               (default: 'FocusGained,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI')
     |autocmd-events| on which the options in |g:tstatus_names| will be 
     compiled.
     If "*", update the values on every update of the 'statusline'.
@@ -99,6 +101,9 @@ g:tstatus_statusline0          (default: &statusline)
                                                     *g:tstatus_statusline1*
 g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%k%) %=%{TStatusSummary()} %3*<%l,%c%V,%p%%>%*')
 
+                                                    *TStatusForceUpdate()*
+TStatusForceUpdate()
+
                                                     *:TStatus*
 :TStatus
     Set or unset (with bang) 'statusline' and 'rulerformat'.
@@ -121,6 +126,10 @@ g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%
                                       these |autocommand-events|.
 
     See also |g:tstatus_names| and |g:tstatus_exprs|.
+
+                                                    *:TStatusregisterexpr*
+:TStatusregisterexpr [OPTIONS] LABEL EXPRESSION...
+    Register a named vim expression.
 
                                                     *:TStatusreset*
 :TStatusreset [OPT1 OPT2 ...]
