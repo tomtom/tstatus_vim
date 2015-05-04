@@ -138,11 +138,7 @@ function! s:GetOptName(opt) "{{{3
         let name = ml[1]
         let label = ml[2]
         " echom "DBG Register 1" name label
-        if label == 'bool'
-            let s:status_labels[name] = {'type': 'bool'}
-        else
-            let s:status_labels[name] = label
-        endif
+        call s:SetStatusLabel(name, label)
     else
         let name = opt
     endif
@@ -150,10 +146,19 @@ function! s:GetOptName(opt) "{{{3
 endf
 
 
-function! s:Register(options) "{{{3
-    " echom "DBG Register" string(a:options)
-    let ev = '*'
-    for opt in a:options
+function! s:SetStatusLabel(name, label) abort "{{{3
+    if a:label == 'bool'
+        let s:status_labels[a:name] = {'type': 'bool'}
+    else
+        let s:status_labels[a:name] = a:label
+    endif
+endf
+
+
+function! s:ParseArgs(args) abort "{{{3
+    let opts = {}
+    for iopt in range(len(a:args))
+        let opt = a:args[iopt]
         " echom "DBG Register 0" opt
         if opt =~ '^-'
             let ml = matchlist(opt, '^--\?\([^=]\+\)=\(.*\)$')
@@ -162,40 +167,67 @@ function! s:Register(options) "{{{3
             endif
             let name = ml[1]
             let label = ml[2]
-            if name == 'event'
-                let ev = label
-            else
-                throw 'TStatus: Unsupported argument: '. opt
-            endif
-            continue
+            let opts[name] = label
         else
-            let name = s:GetOptName(opt)
-        endif
-        " echom "DBG Register 2" name
-        if !has_key(s:options, name)
-            for cev0 in split(ev, ',')
-                let cev = s:CleanEvent(cev0)
-                if !has_key(s:events, cev)
-                    let s:events[cev] = []
-                    if cev != '*'
-                        exec 'autocmd TStatus' cev '* call s:PrepareBufferStatus('. string([cev]) .')'
-                    endif
-                endif
-            endfor
-            call add(s:events[cev], name)
-            if name == 'cpo' || name == 'cpoptions'
-                let s:options[name] = s:save_cpo
-            elseif name =~ '^\l:'
-                if exists(name)
-                    exec 'let s:options[name] = '. name
-                else
-                    exec 'let s:options[name] = ""'
-                endif
-            else
-                exec 'let s:options[name] = &'. name
-            endif
+            break
         endif
     endfor
+    let args = a:args[iopt : -1]
+    return [opts, args]
+endf
+
+
+function! s:RegisterExpr(args) abort "{{{3
+    let [opts, args] = s:ParseArgs(a:args)
+    let [label; expr] = args
+    let exprs = join(expr)
+    " echom "DBG RegisterExpr" string(opts) string(label) string(exprs)
+    call s:SetStatusLabel(exprs, label)
+    let ev = get(opts, 'event', '*')
+    call s:EnsureEvent(ev, exprs)
+endf
+
+
+function! s:Register(args) "{{{3
+    " echom "DBG Register" string(a:args)
+    let [opts, args] = s:ParseArgs(a:args)
+    let ev = get(opts, 'event', '*')
+    for name in args
+        " echom "DBG Register 2" name
+        call s:RegisterName(ev, s:GetOptName(name))
+    endfor
+endf
+
+
+function! s:EnsureEvent(event, name) abort "{{{3
+    for cev0 in split(a:event, ',')
+        let cev = s:CleanEvent(cev0)
+        if !has_key(s:events, cev)
+            let s:events[cev] = []
+            if cev != '*'
+                exec 'autocmd TStatus' cev '* call s:PrepareBufferStatus('. string([cev]) .')'
+            endif
+        endif
+        call add(s:events[cev], a:name)
+    endfor
+endf
+
+
+function! s:RegisterName(event, name) abort "{{{3
+    if !has_key(s:options, a:name)
+        call s:EnsureEvent(a:event, a:name)
+        if a:name == 'cpo' || a:name == 'cpoptions'
+            let s:options[a:name] = s:save_cpo
+        elseif a:name =~ '^\l:'
+            if exists(a:name)
+                exec 'let s:options[a:name] = '. a:name
+            else
+                exec 'let s:options[a:name] = ""'
+            endif
+        else
+            exec 'let s:options[a:name] = &'. a:name
+        endif
+    endif
 endf
 
 
@@ -220,20 +252,32 @@ function! s:SetHighlight() "{{{3
 endf
 
 
+function! s:EnsureStatusCache() abort "{{{3
+    if !exists('b:tstatus_cache')
+        let b:tstatus_cache = {}
+    endif
+endf
+
+
+function! TStatusForceUpdate() abort "{{{3
+    " echom 'DBG TStatusForceUpdate'
+    unlet! b:tstatus
+endf
+
+
 " :nodoc:
 function! TStatusSummary(...)
     if !empty(g:tstatus_colorscheme)
         call s:SetHighlight()
     endif
     if !exists('b:tstatus')
-        let opt = []
+        call s:EnsureStatusCache()
         for [cev, opts] in items(s:events)
             if cev == '*'
-                call s:GetStatus(opt, opts)
-            elseif exists('b:tstatus_'. cev) && !empty(b:tstatus_{cev})
-                call add(opt, b:tstatus_{cev})
+                call s:FillStatus(b:tstatus_cache, opts)
             endif
         endfor
+        let opt = s:StatusList(b:tstatus_cache)
         call s:PrepareExprs(opt, g:tstatus_exprs)
         if exists('b:tstatus_exprs')
             call s:PrepareExprs(opt, b:tstatus_exprs)
@@ -263,12 +307,13 @@ function! s:PrepareBufferStatus(events) "{{{3
         for ev in a:events
             let cev = s:CleanEvent(ev)
             if has_key(s:events, cev)
-                let opt = []
-                call s:GetStatus(opt, s:events[cev])
-                let st = join(opt)
-                if !exists('b:tstatus_'. cev) || b:tstatus_{cev} != st
-                    let b:tstatus_{cev} = st
-                    unlet! b:tstatus
+                call s:EnsureStatusCache()
+                let status = copy(b:tstatus_cache)
+                call s:FillStatus(status, s:events[cev])
+                " if s:StatusString(b:tstatus_cache) != s:StatusString(status)
+                if b:tstatus_cache != status
+                    let b:tstatus_cache = status
+                    call TStatusForceUpdate()
                 endif
             endif
         endfor
@@ -276,8 +321,13 @@ function! s:PrepareBufferStatus(events) "{{{3
 endf
 
 
-function! TStatusForceUpdate() abort "{{{3
-    unlet! b:tstatus
+function! s:StatusList(status) abort "{{{3
+    return sort(map(items(a:status), 'v:val[0] == " " ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
+endf
+
+
+function! s:StatusString(status) abort "{{{3
+    return join(s:StatusList(a:status))
 endf
 
 
@@ -290,7 +340,7 @@ function! s:CleanEvent(ev) "{{{3
 endf
 
 
-function! s:GetStatus(opt, opts) "{{{3
+function! s:FillStatus(status, opts) "{{{3
     for o in a:opts
         if o =~ '^\l:'
             if !exists(o)
@@ -298,10 +348,12 @@ function! s:GetStatus(opt, opts) "{{{3
             else
                 exec 'let ov = '. o
             endif
-        else
+        elseif exists('&'. o)
             exec 'let ov = &'.o
+        else
+            exec 'let ov = '.o
         endif
-        if ov != s:options[o] && s:NotIgnoredStatus(o, ov)
+        if ov != get(s:options, o, '') && s:NotIgnoredStatus(o, ov)
             let type = ''
             if has_key(s:status_labels, o)
                 let ol = s:status_labels[o]
@@ -319,16 +371,15 @@ function! s:GetStatus(opt, opts) "{{{3
             endif
             if type == 'bool'
                 if empty(lab)
-                    call add(a:opt, (ov ? '+' : '-') . o)
-                else
-                    call add(a:opt, lab)
+                    let lab = ov ? '+' : '-') . o
                 endif
+                let a:status[' '. o] = lab
             elseif empty(lab)
-                call add(a:opt, ov)
+                let a:status[' '. o] = ov
             elseif stridx(lab, '%s') != -1
-                call add(a:opt, printf(lab, ov))
+                let a:status[' '. lab] = printf(lab, ov)
             else
-                call add(a:opt, lab .'='. ov)
+                let a:status[lab] = ov
             endif
         endif
         unlet ov
@@ -368,6 +419,11 @@ command! -bang TStatus call s:Set(empty("<bang>"))
 "
 " See also |g:tstatus_names| and |g:tstatus_exprs|.
 command! -nargs=+ -bar TStatusregister call s:Register([<f-args>])
+
+
+" :display: :TStatusregisterexpr [OPTIONS] LABEL EXPRESSION...
+" Register a named vim expression.
+command! -nargs=+ -bar TStatusregisterexpr call s:RegisterExpr([<f-args>])
 
 
 " :display: :TStatusreset [OPT1 OPT2 ...]
