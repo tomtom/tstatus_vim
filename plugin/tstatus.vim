@@ -322,7 +322,7 @@ endf
 
 
 function! s:StatusList(status) abort "{{{3
-    return sort(map(items(a:status), 'v:val[0] == " " ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
+    return sort(map(items(a:status), 'v:val[0] =~# ''^\s'' ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
 endf
 
 
