@@ -62,7 +62,7 @@ g:tstatus_exprs                (default: [])
 <
 
                                                     *g:tstatus_names*
-g:tstatus_names                (default: 'ai aw bin bomb bt cole cpo et fenc fdl fo js list paste sol sw ts tw wm enc fenc')
+g:tstatus_names                (default: 'ai aw bin bomb bt cole cpo et fenc fdl ff fo js list paste sol sw ts tw wm enc fenc')
     A string or list of names that can be defined at startup for use 
     with |:TStatusregister|.
 
@@ -99,7 +99,7 @@ g:tstatus_rulerformat1         (default: '%-010.25(%lx%c%V %P%R%M%W%)')
 g:tstatus_statusline0          (default: &statusline)
 
                                                     *g:tstatus_statusline1*
-g:tstatus_statusline1          (default: '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%k%) %=%{TStatusSummary()} %3*<%l,%c%V,%p%%>%*')
+g:tstatus_statusline1          (default: '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %3* %l,%c%V,%p%%')
 
                                                     *TStatusForceUpdate()*
 TStatusForceUpdate()
