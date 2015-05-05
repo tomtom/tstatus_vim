@@ -447,6 +447,7 @@ command! -nargs=* -bar TStatusreset call s:Reset([<f-args>])
 augroup TStatus
     autocmd!
     autocmd User tstatus call s:PrepareBufferStatus(keys(s:events))
+    autocmd FileType * call TStatusForceUpdate()
 augroup END
 
 
