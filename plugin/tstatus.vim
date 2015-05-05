@@ -34,7 +34,7 @@ if !exists('g:tstatus_names')
     " with |:TStatusregister|.
     "
     " See also |g:tstatus_events|.
-    let g:tstatus_names = 'ai aw bin bomb bt cole cpo et fenc fdl fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+    let g:tstatus_names = 'ai aw bin bomb bt cole cpo et fenc fdl ff fo js list paste sol sw ts tw wm enc fenc'    "{{{2
 endif
 
 
@@ -81,7 +81,7 @@ endif
 
 
 if !exists('g:tstatus_statusline1')
-    let g:tstatus_statusline1 = '%1*[%{winnr()}:%02n]%* %2t %(%M%R%H%W%k%) %=%{TStatusSummary()} %3*<%l,%c%V,%p%%>%*'   "{{{2
+    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %3* %l,%c%V,%p%%'   "{{{2
 endif
 
 
@@ -282,7 +282,7 @@ function! TStatusSummary(...)
         if exists('b:tstatus_exprs')
             call s:PrepareExprs(opt, b:tstatus_exprs)
         endif
-        call add(opt, '<'. &filetype .'/'. &fileformat .'>')
+        " call add(opt, '<'. &filetype .'>')
         if !empty(g:tstatus_timefmt)
             call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
         endif
