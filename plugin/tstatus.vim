@@ -252,10 +252,11 @@ function! s:SetHighlight() "{{{3
 endf
 
 
-function! s:EnsureStatusCache() abort "{{{3
+function! s:GetStatusCache() abort "{{{3
     if !exists('b:tstatus_cache')
         let b:tstatus_cache = {}
     endif
+    return b:tstatus_cache
 endf
 
 
@@ -271,10 +272,9 @@ function! TStatusSummary(...)
         call s:SetHighlight()
     endif
     if !exists('b:tstatus')
-        call s:EnsureStatusCache()
         for [cev, opts] in items(s:events)
             if cev == '*'
-                call s:FillStatus(b:tstatus_cache, opts)
+                call s:FillStatus(opts)
             endif
         endfor
         let opt = s:StatusList(b:tstatus_cache)
@@ -287,6 +287,7 @@ function! TStatusSummary(...)
             call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
         endif
         let b:tstatus = join(opt)
+        " echom "DBG TStatusSummary" b:tstatus
     endif
     return b:tstatus
 endf
@@ -307,14 +308,7 @@ function! s:PrepareBufferStatus(events) "{{{3
         for ev in a:events
             let cev = s:CleanEvent(ev)
             if has_key(s:events, cev)
-                call s:EnsureStatusCache()
-                let status = copy(b:tstatus_cache)
-                call s:FillStatus(status, s:events[cev])
-                " if s:StatusString(b:tstatus_cache) != s:StatusString(status)
-                if b:tstatus_cache != status
-                    let b:tstatus_cache = status
-                    call TStatusForceUpdate()
-                endif
+                call s:FillStatus(s:events[cev])
             endif
         endfor
     endif
@@ -322,7 +316,8 @@ endf
 
 
 function! s:StatusList(status) abort "{{{3
-    return sort(map(items(a:status), 'v:val[0] =~# ''^\s'' ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
+    " return sort(map(items(a:status), 'v:val[0] =~# ''^\s'' ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
+    return sort(values(a:status), 1)
 endf
 
 
@@ -340,7 +335,10 @@ function! s:CleanEvent(ev) "{{{3
 endf
 
 
-function! s:FillStatus(status, opts) "{{{3
+function! s:FillStatus(opts) "{{{3
+    " echom "DBG FillStatus" strftime("%c") string(a:opts)
+    let status = s:GetStatusCache()
+    let must_update = 0
     for o in a:opts
         if o =~ '^\l:'
             if !exists(o)
@@ -354,36 +352,50 @@ function! s:FillStatus(status, opts) "{{{3
             exec 'let ov = '.o
         endif
         if ov != get(s:options, o, '') && s:NotIgnoredStatus(o, ov)
-            let type = ''
-            if has_key(s:status_labels, o)
-                let ol = s:status_labels[o]
-                if type(ol) == 3 && type(o) == 0
-                    let lab  = get(ol, o, '')
-                elseif type(ol) == 4
-                    let type = get(ol, 'type', '')
-                    let lab  = get(ol, 'label', '')
+            " if type(ov) == 1 && ov == ''
+            "     if has_key(status, o)
+            "         call remove(status, o)
+            "         let must_update = 1
+            "     endif
+            " else
+                let type = ''
+                if has_key(s:status_labels, o)
+                    let ol = s:status_labels[o]
+                    if type(ol) == 3 && type(o) == 0
+                        let lab  = get(ol, o, '')
+                    elseif type(ol) == 4
+                        let type = get(ol, 'type', '')
+                        let lab  = get(ol, 'label', '')
+                    else
+                        let lab = ol
+                    endif
+                    unlet ol
                 else
-                    let lab = ol
+                    let lab = o
                 endif
-                unlet ol
-            else
-                let lab = o
-            endif
-            if type == 'bool'
-                if empty(lab)
-                    let lab = ov ? '+' : '-') . o
+                if type == 'bool'
+                    if empty(lab)
+                        let lab = ov ? '+' : '-') . o
+                    endif
+                    let text = lab
+                elseif empty(lab)
+                    let text = ov
+                elseif stridx(lab, '%s') != -1
+                    let text = printf(lab, ov)
+                else
+                    let text = printf('%s=%s', lab, ov)
                 endif
-                let a:status[' '. o] = lab
-            elseif empty(lab)
-                let a:status[' '. o] = ov
-            elseif stridx(lab, '%s') != -1
-                let a:status[' '. lab] = printf(lab, ov)
-            else
-                let a:status[lab] = ov
-            endif
+                if get(status, o, '') !=# text
+                    let status[o] = text
+                    let must_update = 1
+                endif
+            " endif
         endif
         unlet ov
     endfor
+    if must_update
+        call TStatusForceUpdate()
+    endif
 endf
 
 
