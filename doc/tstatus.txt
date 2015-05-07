@@ -39,7 +39,7 @@ Contents~
         TStatusForceUpdate ....... |TStatusForceUpdate()|
         :TStatus ................. |:TStatus|
         :TStatusregister ......... |:TStatusregister|
-        :TStatusregisterexpr ..... |:TStatusregisterexpr|
+        :TStatusregister1 ........ |:TStatusregister1|
         :TStatusreset ............ |:TStatusreset|
 
 
@@ -59,7 +59,10 @@ g:tstatus_exprs                (default: [])
     A list of |eval()| expressions. E.g. >
 
       call add(g:tstatus_exprs, 'mode()')
-<
+
+<   Users should use |:TStatusregister| to register values for the 
+    status line. Users might have to call |TStatusForceUpdate()| in 
+    order to properly update expressions listed in this variable.
 
                                                     *g:tstatus_names*
 g:tstatus_names                (default: 'ai aw bin bomb bt cole cpo et fenc fdl ff fo js list paste sol sw ts tw wm enc fenc')
@@ -99,7 +102,7 @@ g:tstatus_rulerformat1         (default: '%-010.25(%lx%c%V %P%R%M%W%)')
 g:tstatus_statusline0          (default: &statusline)
 
                                                     *g:tstatus_statusline1*
-g:tstatus_statusline1          (default: '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %3* %l,%c%V,%p%%')
+g:tstatus_statusline1          (default: '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %1* %l,%c%V,%p%%')
 
                                                     *TStatusForceUpdate()*
 TStatusForceUpdate()
@@ -118,7 +121,9 @@ TStatusForceUpdate()
 
     OPT can be any option or variable (with g:, b:, or w: prefix).
 
-    LABEL can be either empty, a string, or a format string for |printf()|.
+    LABEL can be either empty, a string, or a format string for 
+    |printf()|. If LABEL is 'bool', the option is treated as a boolean 
+    option/variable.
 
     OPTIONS can be:
 
@@ -127,9 +132,9 @@ TStatusForceUpdate()
 
     See also |g:tstatus_names| and |g:tstatus_exprs|.
 
-                                                    *:TStatusregisterexpr*
-:TStatusregisterexpr [OPTIONS] LABEL EXPRESSION...
-    Register a named vim expression.
+                                                    *:TStatusregister1*
+:TStatusregister1 [OPTIONS] LABEL EXPRESSION
+    Register one labeled vim expression.
 
                                                     *:TStatusreset*
 :TStatusreset [OPT1 OPT2 ...]
