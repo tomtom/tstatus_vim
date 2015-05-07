@@ -25,6 +25,10 @@ if !exists('g:tstatus_exprs')
     " A list of |eval()| expressions. E.g. >
     "
     "   call add(g:tstatus_exprs, 'mode()')
+    "
+    " Users should use |:TStatusregister| to register values for the 
+    " status line. Users might have to call |TStatusForceUpdate()| in 
+    " order to properly update expressions listed in this variable.
     let g:tstatus_exprs = []   "{{{2
 endif
 
@@ -81,14 +85,14 @@ endif
 
 
 if !exists('g:tstatus_statusline1')
-    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %3* %l,%c%V,%p%%'   "{{{2
+    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %1* %l,%c%V,%p%%'   "{{{2
 endif
 
 
 let s:options = {}
 let s:events = {}
-let s:status_labels = {
-            \ 'fdl': 'F%s', 
+let s:opt_def = {
+            \ 'fdl': {'label': 'F%s'},
 			\ 'ai': {'type': 'bool'},
 			\ 'bin': {'type': 'bool'},
 			\ 'et': {'type': 'bool'},
@@ -137,21 +141,39 @@ function! s:GetOptName(opt) "{{{3
         endif
         let name = ml[1]
         let label = ml[2]
+        " if name =~ '?$'
+        "     let name = substitute(name, '?$', '', '')
+        "     let nopts = get(s:opt_def, name, {})
+        "     if !has_key(nopts, 'type')
+        "         let nopts.type = 'bool'
+        "         let s:opt_def[name] = nopts
+        "     endif
+        " endif
         " echom "DBG Register 1" name label
-        call s:SetStatusLabel(name, label)
     else
         let name = opt
+        let label = ''
     endif
+    call s:SetOptDef(name, name)
     return name
 endf
 
 
-function! s:SetStatusLabel(name, label) abort "{{{3
+function! s:SetOptDef(name, label) abort "{{{3
+    let opt = get(s:opt_def, a:name, {})
     if a:label == 'bool'
-        let s:status_labels[a:name] = {'type': 'bool'}
+        let opt.type = 'bool'
+        let opt.label = '%s'. a:label
+    elseif stridx(a:label, '%s') != -1
+        let opt.label = a:label
+    elseif empty(a:label)
+        let opt.label = 'label': '%s'
+    elseif get(opt, 'type', '') ==# 'bool'
+        let opt.label = '%s'. a:label
     else
-        let s:status_labels[a:name] = a:label
+        let opt.label = a:label .'=%s'
     endif
+    let s:opt_def[a:name] = opt
 endf
 
 
@@ -182,7 +204,7 @@ function! s:RegisterExpr(args) abort "{{{3
     let [label; expr] = args
     let exprs = join(expr)
     " echom "DBG RegisterExpr" string(opts) string(label) string(exprs)
-    call s:SetStatusLabel(exprs, label)
+    call s:SetOptDef(exprs, label)
     let ev = get(opts, 'event', '*')
     call s:EnsureEvent(ev, exprs)
 endf
@@ -224,7 +246,7 @@ function! s:RegisterName(event, name) abort "{{{3
             else
                 exec 'let s:options[a:name] = ""'
             endif
-        else
+        elseif exists('&'. a:name)
             exec 'let s:options[a:name] = &'. a:name
         endif
     endif
@@ -260,6 +282,11 @@ function! s:GetStatusCache() abort "{{{3
 endf
 
 
+function! s:GetStatusAsList() abort "{{{3
+    return sort(values(s:GetStatusCache()), 1)
+endf
+
+
 function! TStatusForceUpdate() abort "{{{3
     " echom 'DBG TStatusForceUpdate'
     unlet! b:tstatus
@@ -277,12 +304,11 @@ function! TStatusSummary(...)
                 call s:FillStatus(opts)
             endif
         endfor
-        let opt = s:StatusList(b:tstatus_cache)
+        let opt = s:GetStatusAsList()
         call s:PrepareExprs(opt, g:tstatus_exprs)
         if exists('b:tstatus_exprs')
             call s:PrepareExprs(opt, b:tstatus_exprs)
         endif
-        " call add(opt, '<'. &filetype .'>')
         if !empty(g:tstatus_timefmt)
             call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
         endif
@@ -312,17 +338,6 @@ function! s:PrepareBufferStatus(events) "{{{3
             endif
         endfor
     endif
-endf
-
-
-function! s:StatusList(status) abort "{{{3
-    " return sort(map(items(a:status), 'v:val[0] =~# ''^\s'' ? v:val[1] : printf("%s=%s", v:val[0], v:val[1])'))
-    return sort(values(a:status), 1)
-endf
-
-
-function! s:StatusString(status) abort "{{{3
-    return join(s:StatusList(a:status))
 endf
 
 
@@ -358,32 +373,18 @@ function! s:FillStatus(opts) "{{{3
             "         let must_update = 1
             "     endif
             " else
-                let type = ''
-                if has_key(s:status_labels, o)
-                    let ol = s:status_labels[o]
-                    if type(ol) == 3 && type(o) == 0
-                        let lab  = get(ol, o, '')
-                    elseif type(ol) == 4
-                        let type = get(ol, 'type', '')
-                        let lab  = get(ol, 'label', '')
-                    else
-                        let lab = ol
-                    endif
-                    unlet ol
+                if has_key(s:opt_def, o)
+                    let ol = s:opt_def[o]
+                    let type = get(ol, 'type', '')
+                    let lab  = get(ol, 'label', '%s')
                 else
+                    let type = ''
                     let lab = o
                 endif
                 if type == 'bool'
-                    if empty(lab)
-                        let lab = ov ? '+' : '-') . o
-                    endif
-                    let text = lab
-                elseif empty(lab)
-                    let text = ov
-                elseif stridx(lab, '%s') != -1
-                    let text = printf(lab, ov)
+                    let text = printf(lab, ov ? '+' : '-')
                 else
-                    let text = printf('%s=%s', lab, ov)
+                    let text = printf(lab, ov)
                 endif
                 if get(status, o, '') !=# text
                     let status[o] = text
@@ -422,7 +423,9 @@ command! -bang TStatus call s:Set(empty("<bang>"))
 "
 " OPT can be any option or variable (with g:, b:, or w: prefix).
 "
-" LABEL can be either empty, a string, or a format string for |printf()|.
+" LABEL can be either empty, a string, or a format string for 
+" |printf()|. If LABEL is 'bool', the option is treated as a boolean 
+" option/variable.
 "
 " OPTIONS can be:
 "
@@ -433,9 +436,9 @@ command! -bang TStatus call s:Set(empty("<bang>"))
 command! -nargs=+ -bar TStatusregister call s:Register([<f-args>])
 
 
-" :display: :TStatusregisterexpr [OPTIONS] LABEL EXPRESSION...
-" Register a named vim expression.
-command! -nargs=+ -bar TStatusregisterexpr call s:RegisterExpr([<f-args>])
+" :display: :TStatusregister1 [OPTIONS] LABEL EXPRESSION
+" Register one labeled vim expression.
+command! -nargs=+ -bar TStatusregister1 call s:RegisterExpr([<f-args>])
 
 
 " :display: :TStatusreset [OPT1 OPT2 ...]
