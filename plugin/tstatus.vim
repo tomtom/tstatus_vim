@@ -85,7 +85,7 @@ endif
 
 
 if !exists('g:tstatus_statusline1')
-    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %1* %l,%c%V,%p%%'   "{{{2
+    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%Y%M%R%H%W%k%a%) %=%{TStatusSummary()} %1* %l,%c%V,%p%%'   "{{{2
 endif
 
 
