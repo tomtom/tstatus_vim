@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    244
+" @Revision:    249
 
 if &cp || exists("g:loaded_tstatus")
     finish
@@ -152,9 +152,9 @@ function! s:GetOptName(opt) "{{{3
         " echom "DBG Register 1" name label
     else
         let name = opt
-        let label = ''
+        let label = opt
     endif
-    call s:SetOptDef(name, name)
+    call s:SetOptDef(name, label)
     return name
 endf
 
@@ -167,7 +167,7 @@ function! s:SetOptDef(name, label) abort "{{{3
     elseif stridx(a:label, '%s') != -1
         let opt.label = a:label
     elseif empty(a:label)
-        let opt.label = 'label': '%s'
+        let opt.label = '%s'
     elseif get(opt, 'type', '') ==# 'bool'
         let opt.label = '%s'. a:label
     else
