@@ -1,9 +1,9 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    249
+" @Revision:    259
 
-if &cp || exists("g:loaded_tstatus")
+if &cp || exists('g:loaded_tstatus')
     finish
 endif
 let g:loaded_tstatus = 2
@@ -52,7 +52,7 @@ if !exists('g:tstatus_events')
     " |autocmd-events| on which the options in |g:tstatus_names| will be 
     " compiled.
     " If "*", update the values on every update of the 'statusline'.
-    let g:tstatus_events = 'FocusGained,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI'   "{{{2
+    let g:tstatus_events = 'FocusGained,CmdwinLeave,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI'   "{{{2
 endif
 
 
@@ -103,11 +103,18 @@ let s:opt_def = {
 			\ }
 
 
+function! TStatusGetState() abort "{{{3
+    return {
+                \ 'options': s:options
+                \ }
+endf
+
+
 function! s:Set(statussel) "{{{3
     let &statusline  = g:tstatus_statusline{a:statussel}
     let &rulerformat = g:tstatus_rulerformat{a:statussel}
     if a:statussel
-        if !empty(g:tstatus_colorscheme) && g:tstatus_colorscheme =~ '\w'
+        if !empty(g:tstatus_colorscheme) && g:tstatus_colorscheme =~# '\w'
             exec 'colorscheme' g:tstatus_colorscheme
         endif
     else
@@ -123,7 +130,7 @@ fun! s:Reset(options)
         let options = a:options
     endif
     for name in options
-        if name =~ '^\l:'
+        if name =~# '^\l:'
             exec 'let '. name .' = s:options[name]'
         else
             exec 'let &'. name .' = s:options[name]'
@@ -161,7 +168,7 @@ endf
 
 function! s:SetOptDef(name, label) abort "{{{3
     let opt = get(s:opt_def, a:name, {})
-    if a:label == 'bool'
+    if a:label ==# 'bool'
         let opt.type = 'bool'
         let opt.label = '%s'. a:label
     elseif stridx(a:label, '%s') != -1
@@ -182,7 +189,7 @@ function! s:ParseArgs(args) abort "{{{3
     for iopt in range(len(a:args))
         let opt = a:args[iopt]
         " echom "DBG Register 0" opt
-        if opt =~ '^-'
+        if opt =~# '^-'
             let ml = matchlist(opt, '^--\?\([^=]\+\)=\(.*\)$')
             if empty(ml)
                 throw 'TStatus: Malformed argument: '. opt
@@ -226,7 +233,7 @@ function! s:EnsureEvent(event, name) abort "{{{3
         let cev = s:CleanEvent(cev0)
         if !has_key(s:events, cev)
             let s:events[cev] = []
-            if cev != '*'
+            if cev !=# '*'
                 exec 'autocmd TStatus' cev '* call s:PrepareBufferStatus('. string([cev]) .')'
             endif
         endif
@@ -238,9 +245,9 @@ endf
 function! s:RegisterName(event, name) abort "{{{3
     if !has_key(s:options, a:name)
         call s:EnsureEvent(a:event, a:name)
-        if a:name == 'cpo' || a:name == 'cpoptions'
+        if a:name ==# 'cpo' || a:name ==# 'cpoptions'
             let s:options[a:name] = s:save_cpo
-        elseif a:name =~ '^\l:'
+        elseif a:name =~# '^\l:'
             if exists(a:name)
                 exec 'let s:options[a:name] = '. a:name
             else
@@ -300,7 +307,7 @@ function! TStatusSummary(...)
     endif
     if !exists('b:tstatus')
         for [cev, opts] in items(s:events)
-            if cev == '*'
+            if cev ==# '*'
                 call s:FillStatus(opts)
             endif
         endfor
@@ -342,7 +349,7 @@ endf
 
 
 function! s:CleanEvent(ev) "{{{3
-    if a:ev == '*'
+    if a:ev ==# '*'
         return a:ev
     else
         return substitute(a:ev, '\W', '_', 'g')
@@ -355,7 +362,7 @@ function! s:FillStatus(opts) "{{{3
     let status = s:GetStatusCache()
     let must_update = 0
     for o in a:opts
-        if o =~ '^\l:'
+        if o =~# '^\l:'
             if !exists(o)
                 continue
             else
@@ -381,7 +388,7 @@ function! s:FillStatus(opts) "{{{3
                     let type = ''
                     let lab = o
                 endif
-                if type == 'bool'
+                if type ==# 'bool'
                     let text = printf(lab, ov ? '+' : '-')
                 else
                     let text = printf(lab, ov)
@@ -460,7 +467,7 @@ if !empty(g:tstatus_names)
     elseif type(g:tstatus_names) == 3
         call s:Register(['--event='. g:tstatus_events] + g:tstatus_names)
     else
-        throw "TStatus: g:tstatus_names must be either a string or a list"
+        throw 'TStatus: g:tstatus_names must be either a string or a list'
     endif
 endif
 
