@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    259
+" @Revision:    262
 
 if &cp || exists('g:loaded_tstatus')
     finish
@@ -458,6 +458,9 @@ augroup TStatus
     autocmd!
     autocmd User tstatus call s:PrepareBufferStatus(keys(s:events))
     autocmd FileType * call TStatusForceUpdate()
+    if exists('##OptionSet')
+        autocmd OptionSet * call TStatusForceUpdate()
+    endif
 augroup END
 
 
