@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    262
+" @Revision:    269
 
 if &cp || exists('g:loaded_tstatus')
     finish
@@ -156,7 +156,7 @@ function! s:GetOptName(opt) "{{{3
         "         let s:opt_def[name] = nopts
         "     endif
         " endif
-        " echom "DBG Register 1" name label
+        Tlibtrace 'tstatus', name, label
     else
         let name = opt
         let label = opt
@@ -188,7 +188,7 @@ function! s:ParseArgs(args) abort "{{{3
     let opts = {}
     for iopt in range(len(a:args))
         let opt = a:args[iopt]
-        " echom "DBG Register 0" opt
+        Tlibtrace 'tstatus', opt
         if opt =~# '^-'
             let ml = matchlist(opt, '^--\?\([^=]\+\)=\(.*\)$')
             if empty(ml)
@@ -213,22 +213,24 @@ function! s:RegisterExpr(args) abort "{{{3
     " echom "DBG RegisterExpr" string(opts) string(label) string(exprs)
     call s:SetOptDef(exprs, label)
     let ev = get(opts, 'event', '*')
+    Tlibtrace 'tstatus', ev
     call s:EnsureEvent(ev, exprs)
 endf
 
 
 function! s:Register(args) "{{{3
-    " echom "DBG Register" string(a:args)
+    Tlibtrace 'tstatus', string(a:args)
     let [opts, args] = s:ParseArgs(a:args)
     let ev = get(opts, 'event', '*')
     for name in args
-        " echom "DBG Register 2" name
+        Tlibtrace 'tstatus', name
         call s:RegisterName(ev, s:GetOptName(name))
     endfor
 endf
 
 
 function! s:EnsureEvent(event, name) abort "{{{3
+    Tlibtrace 'tstatus', a:event, a:name
     for cev0 in split(a:event, ',')
         let cev = s:CleanEvent(cev0)
         if !has_key(s:events, cev)
@@ -290,7 +292,7 @@ endf
 
 
 function! s:GetStatusAsList() abort "{{{3
-    return sort(values(s:GetStatusCache()), 1)
+    return sort(filter(values(s:GetStatusCache()), '!empty(v:val)'), 1)
 endf
 
 
@@ -320,7 +322,7 @@ function! TStatusSummary(...)
             call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
         endif
         let b:tstatus = join(opt)
-        " echom "DBG TStatusSummary" b:tstatus
+        Tlibtrace 'tstatus', b:tstatus
     endif
     return b:tstatus
 endf
@@ -358,7 +360,7 @@ endf
 
 
 function! s:FillStatus(opts) "{{{3
-    " echom "DBG FillStatus" strftime("%c") string(a:opts)
+    Tlibtrace 'tstatus', strftime("%c"), string(a:opts)
     let status = s:GetStatusCache()
     let must_update = 0
     for o in a:opts
