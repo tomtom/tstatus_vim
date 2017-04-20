@@ -320,9 +320,10 @@ function! TStatusSummary(...)
             call s:PrepareExprs(opt, b:tstatus_exprs)
         endif
         if !empty(g:tstatus_timefmt)
-            call add(opt, strftime(a:0 >= 1 ? a:1 : g:tstatus_timefmt))
+            call add(opt, strftime(a:0 >= 1 && !empty(a:1) ? a:1 : g:tstatus_timefmt))
         endif
-        let b:tstatus = join(opt)
+        let sep = a:0 >= 2 ? a:2 : ' '
+        let b:tstatus = join(opt, sep)
         Tlibtrace 'tstatus', b:tstatus
     endif
     return b:tstatus
