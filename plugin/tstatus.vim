@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    269
+" @Revision:    307
 
 if &cp || exists('g:loaded_tstatus')
     finish
@@ -76,7 +76,7 @@ endif
 
 
 if !exists('g:tstatus_rulerformat1')
-    let g:tstatus_rulerformat1 = '%-010.25(%lx%c%V %P%R%M%W%)'   "{{{2
+    let g:tstatus_rulerformat1 = '%-010.25(%=%{winnr()}:%02n %lx%c%V %P%R%M%W%)'   "{{{2
 endif
 
 
@@ -86,7 +86,7 @@ endif
 
 
 if !exists('g:tstatus_statusline1')
-    let g:tstatus_statusline1 = '%1*%{winnr()}:%02n %* %2t %(%Y%M%R%H%W%k%a%) %=%{TStatusSummary()} %1* %l,%c%V,%p%%'   "{{{2
+    let g:tstatus_statusline1 = '%1* %{winnr()}:%02n %2t %* %(%Y%M%R%H%W%k%a%) %{TStatusSummary()} %= %1* %015.25(%lx%c%V %p%%%) '   "{{{2
 endif
 
 
