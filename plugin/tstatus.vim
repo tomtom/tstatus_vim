@@ -38,7 +38,8 @@ if !exists('g:tstatus_names')
     " with |:TStatusregister|.
     "
     " See also |g:tstatus_events|.
-    let g:tstatus_names = 'ai aw bin bomb bt cm cole cpo et fenc fdl ff fo js list paste sol sw ts tw wm enc fenc'    "{{{2
+    let g:tstatus_names = 'ai aw bin bomb bt cm cole cpo et fenc fdl ff js list paste sol sw ts tw wm enc fenc'    "{{{2
+    " fo
 endif
 
 
