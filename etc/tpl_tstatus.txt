@@ -17,7 +17,7 @@ Install~
 Either use the zip archive:
 
 - Download the zip archive
-- Extract it to ~/.vim/pack/tml/start/workbook
+- Extract it to ~/.vim/pack/tml/start/tstatus
 
 or install from github:
 

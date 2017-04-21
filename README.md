@@ -15,7 +15,7 @@ Call `:TStatus` to set or reset the status line or the ruler.
 Either use the zip archive:
 
 - Download the zip archive
-- Extract it to ~/.vim/pack/tml/start/workbook
+- Extract it to ~/.vim/pack/tml/start/tstatus
 
 or install from github:
 
