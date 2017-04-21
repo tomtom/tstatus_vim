@@ -2,14 +2,15 @@ This plugin provides a still rather simple statusline manager to monitor
 options and variables. If an option's or variable's value changes, it is 
 displayed in the statusline.
 
-In order to monitor options/variables, either set |g:tstatus_names| in 
-|vimrc| or call |:TStatusregister|.
+In order to monitor options/variables, either set `g:tstatus_names` in 
+`vimrc` or call `:TStatusregister`.
 
-Call |:TStatus| to set or reset the status line or the ruler.
+Call `:TStatus` to set or reset the status line or the ruler.
 
 
 -----------------------------------------------------------------------
-Install~
+
+# Install
 
 Either use the zip archive:
 
@@ -30,6 +31,5 @@ details.
 
 
 License: GPLv3 or later
-Install: See http://github.com/tomtom/vimtlib/blob/master/INSTALL.TXT
-See http://github.com/tomtom for related plugins.
+
 
