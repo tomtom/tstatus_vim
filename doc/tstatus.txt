@@ -26,26 +26,20 @@ please make sure, you have the current version of vimball (vimscript
 ========================================================================
 Contents~
 
-        g:tstatus_timefmt ........ |g:tstatus_timefmt|
-        g:tstatus_exprs .......... |g:tstatus_exprs|
-        g:tstatus_names .......... |g:tstatus_names|
-        g:tstatus_ignore ......... |g:tstatus_ignore|
-        g:tstatus_events ......... |g:tstatus_events|
-        g:tstatus_colorscheme .... |g:tstatus_colorscheme|
-        g:tstatus_rulerformat0 ... |g:tstatus_rulerformat0|
-        g:tstatus_rulerformat1 ... |g:tstatus_rulerformat1|
-        g:tstatus_statusline0 .... |g:tstatus_statusline0|
-        g:tstatus_statusline1 .... |g:tstatus_statusline1|
-        TStatusForceUpdate ....... |TStatusForceUpdate()|
-        :TStatus ................. |:TStatus|
-        :TStatusregister ......... |:TStatusregister|
-        :TStatusregister1 ........ |:TStatusregister1|
-        :TStatusreset ............ |:TStatusreset|
+        g:tstatus_timefmt ....... |g:tstatus_timefmt|
+        g:tstatus_exprs ......... |g:tstatus_exprs|
+        g:tstatus_names ......... |g:tstatus_names|
+        g:tstatus_ignore ........ |g:tstatus_ignore|
+        g:tstatus_events ........ |g:tstatus_events|
+        g:tstatus_colorscheme ... |g:tstatus_colorscheme|
+        :TStatus ................ |:TStatus|
+        :TStatusregister ........ |:TStatusregister|
+        :TStatusregister1 ....... |:TStatusregister1|
+        :TStatusreset ........... |:TStatusreset|
 
 
-========================================================================
-plugin/tstatus.vim~
-
+------------------------------------------------------------------------
+                                                    *plugin/tstatus.vim*
                                                     *g:tstatus_timefmt*
 g:tstatus_timefmt              (default: '')
     A string for |strftime()|. If empty, don't display a time stamp in 
@@ -65,7 +59,7 @@ g:tstatus_exprs                (default: [])
     order to properly update expressions listed in this variable.
 
                                                     *g:tstatus_names*
-g:tstatus_names                (default: 'ai aw bin bomb bt cole cpo et fenc fdl ff fo js list paste sol sw ts tw wm enc fenc')
+g:tstatus_names                (default: 'ai aw bin bomb bt cm cole cpo et fenc fdl ff js list paste sol sw ts tw wm enc fenc')
     A string or list of names that can be defined at startup for use 
     with |:TStatusregister|.
 
@@ -76,7 +70,7 @@ g:tstatus_ignore               (default: {})
     A dictionary of NAME => |REGEXP| FOR IGNORED VALUES.
 
                                                     *g:tstatus_events*
-g:tstatus_events               (default: 'FocusGained,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI')
+g:tstatus_events               (default: 'FocusGained,CmdwinLeave,FileType,SessionLoadPost,QuickFixCmdPost,EncodingChanged,BufEnter,CursorHold,CursorHoldI')
     |autocmd-events| on which the options in |g:tstatus_names| will be 
     compiled.
     If "*", update the values on every update of the 'statusline'.
@@ -91,21 +85,6 @@ g:tstatus_colorscheme          (default: 'tstatus')
       StatusLineNormal
       StatusLineInsert
       StatusLineVisual
-
-                                                    *g:tstatus_rulerformat0*
-g:tstatus_rulerformat0         (default: &rulerformat)
-
-                                                    *g:tstatus_rulerformat1*
-g:tstatus_rulerformat1         (default: '%-010.25(%lx%c%V %P%R%M%W%)')
-
-                                                    *g:tstatus_statusline0*
-g:tstatus_statusline0          (default: &statusline)
-
-                                                    *g:tstatus_statusline1*
-g:tstatus_statusline1          (default: '%1*%{winnr()}:%02n %* %2t %(%M%R%H%W%k%a%) %=%{TStatusSummary()} %y %1* %l,%c%V,%p%%')
-
-                                                    *TStatusForceUpdate()*
-TStatusForceUpdate()
 
                                                     *:TStatus*
 :TStatus
