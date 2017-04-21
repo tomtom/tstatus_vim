@@ -11,13 +11,19 @@ Call |:TStatus| to set or reset the status line or the ruler.
 -----------------------------------------------------------------------
 Install~
 
-Edit the vba file and type: >
+Either use the zip archive:
 
-    :so %
+- Download the zip archive
+- Extract it to ~/.vim/pack/tml/start/workbook
 
-See :help vimball for details. If you have difficulties or use vim 7.0, 
-please make sure, you have the current version of vimball (vimscript 
-#1502) installed or update your runtime.
+or install from github:
+
+- Start a terminal
+- Change the working directory to ~/.vim/pack/tml/start/
+- Type: git clone https://github.com/tomtom/tstatus_vim
+
+NOTE: On Windows, ~/.vim might be ~/vimfiles. Please see 'runtimepath' for 
+details.
 
 
 
