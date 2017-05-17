@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    308
+" @Revision:    309
 " GetLatestVimScripts: 5549 0 :AutoInstall: tstatus.vim
 
 if &cp || exists('g:loaded_tstatus')
@@ -87,7 +87,7 @@ endif
 
 
 if !exists('g:tstatus_statusline1')
-    let g:tstatus_statusline1 = '%1* %{winnr()}:%02n %2t %* %(%Y%M%R%H%W%k%a%) %{TStatusSummary()} %= %1* %015.25(%lx%c%V %p%%%) '   "{{{2
+    let g:tstatus_statusline1 = '%1* %{winnr()}:%02n %2t %* %(%Y%M%R%H%W%k%a%)%=%{TStatusSummary()} %1* %015.25(%lx%c%V %p%%%) '   "{{{2
 endif
 
 
