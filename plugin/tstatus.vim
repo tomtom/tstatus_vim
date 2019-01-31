@@ -1,7 +1,7 @@
 " @Author:      Tom Link (mailto:micathom AT gmail com?subject=vim-tstatus)
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
-" @Revision:    309
+" @Revision:    321
 " GetLatestVimScripts: 5549 0 :AutoInstall: tstatus.vim
 
 if &cp || exists('g:loaded_tstatus')
@@ -11,6 +11,11 @@ let g:loaded_tstatus = 2
 
 let s:save_cpo = &cpo
 set cpo&vim
+
+
+if exists(':Tlibtrace') != 2
+    command! -nargs=+ -bang Tlibtrace :
+endif
 
 
 if !exists('g:tstatus_timefmt')
@@ -95,14 +100,15 @@ let s:options = {}
 let s:events = {}
 let s:opt_def = {
             \ 'fdl': {'label': 'F%s'},
-			\ 'ai': {'type': 'bool'},
-			\ 'bin': {'type': 'bool'},
-			\ 'et': {'type': 'bool'},
-			\ 'js': {'type': 'bool'},
-			\ 'list': {'type': 'bool'},
-			\ 'paste': {'type': 'bool'},
-			\ 'sol': {'type': 'bool'},
-			\ }
+            \ 'ai': {'type': 'bool'},
+            \ 'bin': {'type': 'bool'},
+            \ 'et': {'type': 'bool'},
+            \ 'fenc': {'ignore_values': ['', &encoding]},
+            \ 'js': {'type': 'bool'},
+            \ 'list': {'type': 'bool'},
+            \ 'paste': {'type': 'bool'},
+            \ 'sol': {'type': 'bool'},
+            \ }
 
 
 function! TStatusGetState() abort "{{{3
@@ -251,14 +257,15 @@ function! s:RegisterName(event, name) abort "{{{3
         call s:EnsureEvent(a:event, a:name)
         if a:name ==# 'cpo' || a:name ==# 'cpoptions'
             let s:options[a:name] = s:save_cpo
-        elseif a:name =~# '^\l:'
-            if exists(a:name)
-                exec 'let s:options[a:name] = '. a:name
-            else
-                exec 'let s:options[a:name] = ""'
+        else
+            let opt = get(s:opt_def, a:name, {})
+            if a:name =~# '^\l:'
+                let value = get(opt, 'default_expr', exists(a:name) ? a:name : '""')
+                exec 'let s:options[a:name] =' value
+            elseif exists('&'. a:name)
+                let value = get(opt, 'default_expr', '&'. a:name)
+                exec 'let s:options[a:name] =' value
             endif
-        elseif exists('&'. a:name)
-            exec 'let s:options[a:name] = &'. a:name
         endif
     endif
 endf
@@ -412,8 +419,15 @@ function! s:FillStatus(opts) "{{{3
 endf
 
 
-function! s:NotIgnoredStatus(field, value) "{{{3
-    let ignore = get(g:tstatus_ignore, a:field, '')
+function! s:NotIgnoredStatus(name, value) "{{{3
+    let opt = get(s:opt_def, a:name, {})
+    if has_key(opt, 'ignore_rx')
+        return a:value !~# opt.ignore_rx
+    endif
+    if has_key(opt, 'ignore_values')
+        return index(opt.ignore_values, a:value) == -1
+    endif
+    let ignore = get(g:tstatus_ignore, a:name, '')
     if empty(ignore)
         return 1
     else
