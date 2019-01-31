@@ -1,0 +1,12 @@
+:TStatus	tstatus.txt	/*:TStatus*
+:TStatusregister	tstatus.txt	/*:TStatusregister*
+:TStatusregister1	tstatus.txt	/*:TStatusregister1*
+:TStatusreset	tstatus.txt	/*:TStatusreset*
+g:tstatus_colorscheme	tstatus.txt	/*g:tstatus_colorscheme*
+g:tstatus_events	tstatus.txt	/*g:tstatus_events*
+g:tstatus_exprs	tstatus.txt	/*g:tstatus_exprs*
+g:tstatus_ignore	tstatus.txt	/*g:tstatus_ignore*
+g:tstatus_names	tstatus.txt	/*g:tstatus_names*
+g:tstatus_timefmt	tstatus.txt	/*g:tstatus_timefmt*
+plugin/tstatus.vim	tstatus.txt	/*plugin\/tstatus.vim*
+tstatus.txt	tstatus.txt	/*tstatus.txt*
